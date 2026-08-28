@@ -1,0 +1,129 @@
+# ---------------------------------------------------------------------------
+# Orion CRM — orchestration locale
+#
+# Deux services seulement : le front (nginx) et le back (Express).
+# Pas de service `db` : SQLite est un fichier lu directement par le processus
+# Node, pas un serveur. Sa persistance est assurée par un volume nommé.
+#
+# Lancement :  docker compose up -d --build
+# Arrêt      :  docker compose down          (le volume survit)
+# Remise à zéro : docker compose down -v     (⚠ supprime la base)
+# ---------------------------------------------------------------------------
+
+name: orion-crm
+
+services:
+
+  # -------------------------------------------------------------------------
+  # BACK-END — Express + Prisma + SQLite
+  # -------------------------------------------------------------------------
+  server:
+    # Le nom du service compte : nginx.conf proxifie vers http://server:8080.
+    # Renommer ce service casse le front.
+    build:
+      context: ./server
+    # `image` sert deux usages : nommer l'image construite en local, et
+    # permettre un déploiement par simple `docker compose pull` depuis GHCR.
+    image: ghcr.io/${GHCR_OWNER:-orion}/orion-server:${TAG:-latest}
+
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      # Chemin absolu : le volume est monté sur /app/data
+      DATABASE_URL: file:/app/data/orion.db
+
+    # `expose` et non `ports` : le back est joignable depuis le réseau interne
+    # (par nginx) mais PAS depuis la machine hôte. Un seul point d'entrée
+    # public = surface d'attaque réduite. Pour tester l'API pendant le
+    # développement, passer par le proxy : http://localhost:4200/api/health
+    expose:
+      - "8080"
+
+    volumes:
+      # Volume nommé : la base survit à `docker compose down`.
+      # Sans lui, toutes les données disparaissent à chaque arrêt.
+      - orion-data:/app/data
+
+    networks:
+      - orion-net
+
+    # Le healthcheck est défini dans l'image (HEALTHCHECK du Dockerfile) :
+    # il n'est pas redéclaré ici pour éviter deux définitions divergentes.
+
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+      # Rotation des logs : évite qu'un conteneur bavard remplisse le disque.
+      # C'est aussi le fichier que Logstash ira lire en §6.
+
+  # -------------------------------------------------------------------------
+  # FRONT-END — build statique servi par nginx, proxy /api vers le back
+  # -------------------------------------------------------------------------
+  client:
+    build:
+      context: ./client
+    image: ghcr.io/${GHCR_OWNER:-orion}/orion-client:${TAG:-latest}
+
+    restart: unless-stopped
+
+    ports:
+      # hôte:conteneur — nginx tourne en utilisateur non privilégié et écoute
+      # donc sur 8080 ; 4200 côté hôte pour rester cohérent avec le port de
+      # développement de Vite.
+      - "4200:8080"
+
+    depends_on:
+      server:
+        condition: service_healthy
+        # nginx démarre seulement quand le back répond sur /api/health.
+        # Sans cette condition, les premières requêtes /api renvoient 502.
+
+    networks:
+      - orion-net
+
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ---------------------------------------------------------------------------
+volumes:
+  orion-data:
+    # Volume nommé et non bind mount : géré par Docker, portable entre
+    # machines, et sauvegardable par une commande unique (voir §7).
+
+networks:
+  orion-net:
+    driver: bridge
+    # Réseau déclaré explicitement plutôt que le réseau par défaut : c'est lui
+    # qui fournit la résolution DNS des noms de services (`server`).
+# ---------------------------------------------------------------------------
+# À SAVOIR
+
+#
+# 2. Migrations : elles sont appliquées au démarrage du conteneur back
+#    (`prisma migrate deploy` dans le CMD). Rien à lancer à la main.
+#
+# 3. Publier le port du back en développement : ne pas modifier ce fichier,
+#    créer un docker-compose.override.yml (chargé automatiquement) :
+#        services:
+#          server:
+#            ports: ["8080:8080"]
+#
+# 4. La stack ELK reste dans un fichier séparé (docker-compose-elk.yml) :
+#    elle n'est ni un composant de l'application, ni une étape du pipeline.
+#
+# 5. Durcissement possible à mentionner en §5 sans forcément l'appliquer :
+#    `read_only: true` + tmpfs sur /tmp pour les deux services.
+# ---------------------------------------------------------------------------

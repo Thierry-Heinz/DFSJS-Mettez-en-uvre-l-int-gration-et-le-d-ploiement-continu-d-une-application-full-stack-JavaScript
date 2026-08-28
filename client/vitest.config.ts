@@ -8,9 +8,9 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: [],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'dist/'],
-    },
+       provider: 'v8',
+        reporter: ['text', 'lcov'],
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: ['**/*.test.{ts,tsx}', '**/*.d.ts'],
   },
-});
+}});

@@ -1,0 +1,23 @@
+node_modules
+dist
+coverage
+ 
+# Secrets : ne doivent jamais entrer dans une image
+.env
+.env.*
+!.env.example
+ 
+# Base de données locale
+*.db
+*.db-journal
+data
+ 
+# Divers
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.log
+.vscode
+.idea
+ 
