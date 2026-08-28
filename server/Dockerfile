@@ -14,7 +14,7 @@
 ###############################################################################
 # STAGE 1 — build
 ###############################################################################
-FROM node:22-slim AS build
+FROM node:25-slim AS build
 
 #Openssl est nécessaire pour Prisma (voir §3.1)
 RUN apt-get update \
@@ -44,7 +44,7 @@ RUN npm run build
 ###############################################################################
 # STAGE 2 — runtime
 ###############################################################################
-FROM node:22-slim AS runtime
+FROM node:25-slim AS runtime
 
 #Openssl est nécessaire pour Prisma (voir §3.1)
 RUN apt-get update \
