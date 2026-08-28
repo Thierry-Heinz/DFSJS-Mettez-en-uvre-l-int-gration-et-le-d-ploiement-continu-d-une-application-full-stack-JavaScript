@@ -41,7 +41,7 @@ jobs:
 
 
       - name: Analyser l'image du back-end
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@<empreinte>
         with:
           image-ref: orion-server:scan
           format: sarif
@@ -59,7 +59,7 @@ jobs:
 
       # --- Front-end --------------------------------------------------------
       - name: Construire l'image du front-end
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v6git 
         with:
           context: ./client
           push: false
@@ -67,7 +67,7 @@ jobs:
           tags: orion-client:scan
 
       - name: Analyser l'image du front-end
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@<empreinte>
         with:
           image-ref: orion-client:scan
           format: sarif
@@ -83,7 +83,7 @@ jobs:
 
       # --- Résumé lisible dans le journal d'exécution ------------------------
       - name: Afficher un résumé
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@<empreinte>
         with:
           image-ref: orion-server:scan
           format: table
