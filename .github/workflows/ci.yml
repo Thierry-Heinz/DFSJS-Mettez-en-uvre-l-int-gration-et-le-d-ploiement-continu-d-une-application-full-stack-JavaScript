@@ -24,10 +24,10 @@ jobs:
             DATABASE_URL: "file:./dev.db"
         steps:
         - name: Checkout repository
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
 
         - name: Install Node.js
-          uses: actions/setup-node@v5
+          uses: actions/setup-node@v7
           with:
             node-version: ${{ env.NODE_VERSION }}
             cache: npm
@@ -46,7 +46,7 @@ jobs:
           run: npm run test:coverage
 
         - name: Publish test coverage report
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: coverage-server
             path: server/coverage/lcov.info
@@ -60,10 +60,10 @@ jobs:
                 working-directory: client
         steps:
         - name: Checkout repository
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
 
         - name: Install Node.js
-          uses: actions/setup-node@v5
+          uses: actions/setup-node@v7
           with:
             node-version: ${{ env.NODE_VERSION }}
             cache: npm
@@ -82,7 +82,7 @@ jobs:
           run: npm run test:coverage
 
         - name: Publish test coverage report
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: coverage-client
             path: client/coverage/lcov.info
@@ -96,21 +96,26 @@ jobs:
         
         steps:
         - name: Checkout repository
-          uses: actions/checkout@v5
+          uses: actions/checkout@v7
           with:
             fetch-depth: 0
         
         - name: Back-end coverage
-          uses: actions/download-artifact@v4
+          uses: actions/download-artifact@v8
           with:
             name: coverage-server
             path: server/coverage
 
         - name: Front-end coverage
-          uses: actions/download-artifact@v4
+          uses: actions/download-artifact@v8
           with:
             name: coverage-client
             path: client/coverage
+
+        - name: Correct lcov paths
+          run: |
+            sed -i 's|^SF:|SF:server/|' server/coverage/lcov.info
+            sed -i 's|^SF:|SF:client/|' client/coverage/lcov.info
 
         - name: SonarQube Scan
           uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
