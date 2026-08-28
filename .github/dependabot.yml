@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------------------
+# Orion CRM — surveillance des dépendances
+#
+# Dependabot lit les fichiers de dépendances du dépôt, les compare à une base
+# de vulnérabilités connues, et ouvre des pull requests de mise à jour.
+# Il ne s'occupe QUE de ce qui est déclaré dans le dépôt : pour ce qui se
+# trouve à l'intérieur des images Docker, voir security.yml (Trivy).
+#
+# ---------------------------------------------------------------------------
+
+version: 2
+
+updates:
+
+  # --- Dépendances npm du back-end ---------------------------------------
+  - package-ecosystem: npm
+    directory: /server
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+    groups:
+      mineures-et-correctifs:
+        update-types:
+          - minor
+          - patch
+
+
+  # --- Dépendances npm du front-end --------------------------------------
+  - package-ecosystem: npm
+    directory: /client
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+    groups:
+      mineures-et-correctifs:
+        update-types:
+          - minor
+          - patch
+
+  # --- Actions utilisées par les workflows --------------------------------
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore"
+
+
+  # --- Images de base des Dockerfiles -------------------------------------
+  - package-ecosystem: docker
+    directory: /server
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore"
+
+  - package-ecosystem: docker
+    directory: /client
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore"

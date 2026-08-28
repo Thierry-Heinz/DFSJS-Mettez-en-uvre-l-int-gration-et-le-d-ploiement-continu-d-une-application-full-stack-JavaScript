@@ -1,0 +1,91 @@
+# ---------------------------------------------------------------------------
+# Orion CRM — analyse de sécurité des images
+#
+# Trivy analyse ce que contiennent les images construites :
+# paquets du système d'exploitation, bibliothèques installées, fichiers
+# sensibles oubliés.
+#
+# Exécution planifiée chaque nuit.
+#
+# ---------------------------------------------------------------------------
+
+name: Sécurité
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:       
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+
+  images:
+    name: Analyser les images Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v5
+
+      # --- Back-end ---------------------------------------------------------
+      - name: Construire l'image du back-end
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          push: false
+          load: true
+          tags: orion-server:scan
+
+
+      - name: Analyser l'image du back-end
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: orion-server:scan
+          format: sarif
+          output: trivy-server.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+
+
+      - name: Publier les résultats du back-end
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-server.sarif
+          category: trivy-server
+
+
+      # --- Front-end --------------------------------------------------------
+      - name: Construire l'image du front-end
+        uses: docker/build-push-action@v6
+        with:
+          context: ./client
+          push: false
+          load: true
+          tags: orion-client:scan
+
+      - name: Analyser l'image du front-end
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: orion-client:scan
+          format: sarif
+          output: trivy-client.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+
+      - name: Publier les résultats du front-end
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-client.sarif
+          category: trivy-client
+
+      # --- Résumé lisible dans le journal d'exécution ------------------------
+      - name: Afficher un résumé
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: orion-server:scan
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
