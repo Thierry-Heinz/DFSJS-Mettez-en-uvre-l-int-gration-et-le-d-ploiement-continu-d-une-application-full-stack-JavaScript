@@ -41,7 +41,7 @@ jobs:
 
 
       - name: Analyser l'image du back-end
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@<empreinte>
         with:
           image-ref: orion-server:scan
           format: sarif
