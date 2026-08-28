@@ -23,15 +23,15 @@ permissions:
 jobs:
 
   images:
-    name: Analyser les images Docker
+    name: Analyze docker images
     runs-on: ubuntu-latest
 
     steps:
-      - name: Récupérer le code
+      - name: checkout repository
         uses: actions/checkout@v5
 
       # --- Back-end ---------------------------------------------------------
-      - name: Construire l'image du back-end
+      - name: build back-end
         uses: docker/build-push-action@v6
         with:
           context: ./server
@@ -40,8 +40,8 @@ jobs:
           tags: orion-server:scan
 
 
-      - name: Analyser l'image du back-end
-        uses: aquasecurity/trivy-action@<empreinte>
+      - name: analyse back-end
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: orion-server:scan
           format: sarif
@@ -50,7 +50,7 @@ jobs:
           ignore-unfixed: true
 
 
-      - name: Publier les résultats du back-end
+      - name: publish back-end results
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-server.sarif
@@ -58,16 +58,16 @@ jobs:
 
 
       # --- Front-end --------------------------------------------------------
-      - name: Construire l'image du front-end
-        uses: docker/build-push-action@v6git 
+      - name: build front-end
+        uses: docker/build-push-action@v6
         with:
           context: ./client
           push: false
           load: true
           tags: orion-client:scan
 
-      - name: Analyser l'image du front-end
-        uses: aquasecurity/trivy-action@<empreinte>
+      - name: analyze front-end
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: orion-client:scan
           format: sarif
@@ -75,15 +75,15 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
 
-      - name: Publier les résultats du front-end
+      - name: publish front-end results
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-client.sarif
           category: trivy-client
 
       # --- Résumé lisible dans le journal d'exécution ------------------------
-      - name: Afficher un résumé
-        uses: aquasecurity/trivy-action@<empreinte>
+      - name: Display summary
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: orion-server:scan
           format: table
