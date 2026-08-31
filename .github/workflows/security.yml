@@ -25,10 +25,7 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v7
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
       # --- Back-end ---------------------------------------------------------
       - name: build back-end
         uses: docker/build-push-action@v7
