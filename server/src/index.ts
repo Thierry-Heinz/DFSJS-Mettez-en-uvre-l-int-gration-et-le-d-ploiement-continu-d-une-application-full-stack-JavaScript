@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import organizationRoutes from './routes/organizationRoutes';
 import contactRoutes from './routes/contactRoutes';
+import { requestLogger } from './middlewares/requestLogger';
+import { errorLogger } from './middlewares/errorLogger';
 
 dotenv.config();
 
@@ -20,6 +22,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Request logger middleware
+app.use(requestLogger);
+
 // Routes
 app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'OK', message: 'Orion CRM API is running' });
@@ -32,6 +37,9 @@ app.use('/api/contacts', contactRoutes);
 app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });
 });
+
+// Error logger middleware
+app.use(errorLogger);
 
 // Error handler
 app.use((err: Error, _req: Request, res: Response) => {
