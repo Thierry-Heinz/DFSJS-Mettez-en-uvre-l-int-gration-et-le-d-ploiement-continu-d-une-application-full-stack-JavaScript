@@ -7,7 +7,11 @@
 ###############################################################################
 # STAGE 1 — build
 ###############################################################################
+<<<<<<< Updated upstream
 FROM node:26-alpine AS build
+=======
+FROM node:25-alpine AS build
+>>>>>>> Stashed changes
 
 WORKDIR /app
 

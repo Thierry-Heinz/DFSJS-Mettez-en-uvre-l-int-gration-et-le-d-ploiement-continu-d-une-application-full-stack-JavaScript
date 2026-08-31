@@ -1,10 +1,6 @@
 # ---------------------------------------------------------------------------
 # Orion CRM — analyse de sécurité des images
 #
-# Trivy analyse ce que contiennent les images construites :
-# paquets du système d'exploitation, bibliothèques installées, fichiers
-# sensibles oubliés.
-#
 # Exécution planifiée chaque nuit.
 #
 # ---------------------------------------------------------------------------
@@ -29,7 +25,10 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v7
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
       # --- Back-end ---------------------------------------------------------
       - name: build back-end
         uses: docker/build-push-action@v7

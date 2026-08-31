@@ -5,10 +5,8 @@
 #   build   : image complète de Node, toutes les dépendances, compilation TS
 #   runtime : image minimale, dépendances de production seulement, code compilé
 #
-# ⚠ PRÉREQUIS : déplacer "prisma" de devDependencies vers dependencies dans
-#   package.json. Le CLI est nécessaire au démarrage du conteneur pour
-#   appliquer les migrations (`prisma migrate deploy`). C'est un choix à
-#   assumer et à documenter en §3.1.
+# ⚠ PRÉREQUIS : "prisma" de devDependencies vers dependencies dans
+#   package.json. (`prisma migrate deploy`). 
 # ---------------------------------------------------------------------------
 
 ###############################################################################
@@ -29,13 +27,11 @@ COPY package*.json ./
 
 RUN npm ci
 
-# Le schéma est nécessaire avant la génération du client Prisma
 COPY prisma ./prisma
 
 RUN npx prisma generate
 
-# Puis seulement les sources : elles changent à chaque commit, donc elles
-# arrivent en dernier pour ne pas invalider les couches précédentes.
+
 COPY tsconfig.json ./
 COPY src ./src
 
