@@ -9,8 +9,15 @@ dotenv.config();
 const app: Application = express();
 const PORT = process.env.PORT || 8080;
 
+
 // Middleware
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:4200')
+  .split(',')
+  .map((o) => o.trim());
+
+app.use(cors({
+  origin: allowedOrigins,
+}));
 app.use(express.json());
 
 // Routes
