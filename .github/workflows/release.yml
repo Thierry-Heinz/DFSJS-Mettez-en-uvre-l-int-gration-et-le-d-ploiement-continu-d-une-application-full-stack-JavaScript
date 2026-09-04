@@ -45,6 +45,10 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
 
       - name: Construire le back-end
         working-directory: server
