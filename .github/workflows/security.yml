@@ -51,7 +51,7 @@ jobs:
 
 
       - name: publish back-end results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-server.sarif
           category: trivy-server
@@ -76,7 +76,7 @@ jobs:
           ignore-unfixed: true
 
       - name: publish front-end results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-client.sarif
           category: trivy-client
