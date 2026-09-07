@@ -45,3 +45,5 @@ coverage/
 # Misc
 *.tsbuildinfo
 .cache/
+
+generate-traffic.sh
